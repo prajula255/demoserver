@@ -2,6 +2,10 @@ const mongoose = require("mongoose");
 
 const userSchema = new mongoose.Schema(
     {
+        user_id: {
+            type: String,
+            required: [true, "user id required"]
+        },
         name: {
             type: String,
             required: [true, "Name is required"],
@@ -17,6 +21,14 @@ const userSchema = new mongoose.Schema(
             type: String,
             required: [true, "Password is required"],
         },
+        profileImg: {
+            type: [String],
+        },
+        phone: {
+            type: Number
+        }
+
+
         // role: {
         //   type: String,
         //   enum: ["user", "admin"],
