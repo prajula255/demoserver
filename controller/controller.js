@@ -78,20 +78,18 @@ exports.updateUser = async (request, response) => {
     const formData = request.body
     const formFiles = request.files
     console.log("request body: \n", formData, "\nrequest files:\n", formFiles);
-    response.status(200).json("success")
     try {
         const existingUser = await User.findOne({ email: formData.email })
         if (existingUser) {
             try {
+                
                 if (formData.name) existingUser.name = formData.name;
                 if (formData.password) existingUser.password = formData.password;
                 if (formData.phone) existingUser.phone = formData.phone;
-                if (formFiles.images) {
-                    const imgPaths = formFiles.images.map(file => {
-                        `/pictures/profileImage/${file.fileName}`
-                    })
-                    existingUser.profileImg = imgPaths
-                };
+                if (formFiles && formFiles.length > 0) {
+                    const imgPaths = formFiles.map(file => `/pictures/profileImage/${file.filename}`);
+                    existingUser.profileImg = imgPaths; // Assuming single image upload
+                }
                 await existingUser.save();
 
                 return response.status(200).json({ msg: "updated profile successfully" });
@@ -99,14 +97,13 @@ exports.updateUser = async (request, response) => {
             } catch (error) {
                 return response.status(500).json({ error: error.message });
             }
-        }
-
-        else {
+        } else {
             return response.status(406).json({ msg: "user not found" })
         }
     } catch (error) {
         return response.status(500).json({ error: error.message })
     }
+    
 }
 
 exports.insertNewAds = async (request, response) => {
@@ -183,3 +180,19 @@ exports.fetchUserDetails = async (request, response) => {
     }
 };
 
+
+// to view other users ads
+exports.fetchAllAds = async (request, response) => {
+    try {
+        const userId = request.user?.user_id; 
+        const ads = await Ad.find({ user_id: { $ne: userId } });
+
+        if (!ads.length) {
+            return response.status(404).json({ message: "No ads available" });
+        }
+
+        return response.status(200).json(ads);
+    } catch (error) {
+        return response.status(500).json({ error: error.message });
+    }
+};
